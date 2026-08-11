@@ -20,7 +20,10 @@ namespace Echec
         //Garde en mémoire l'existance un tableau de 64 cases
         Case[,] mesCases = new Case[8, 8];
 
+        //Garde en mémoire l'existance de la grille
+        Border[,] mesGrilles = new Border[8, 8];
 
+        Case caseSelectionnee;
 
 
 
@@ -61,9 +64,17 @@ namespace Echec
                     mesCases[i,c] = maCase;
 
 
+                    
+
+
+
+                    mesGrilles[i, c] = Grille; 
+
+
                     //Isolement des cases
                     Grille.Tag = maCase;
                     Grille.MouseLeftButtonDown += Grille_MouseLeftButtonDown;
+
 
 
                     //Condition pour les couleurs des cases de l'échiquier
@@ -88,8 +99,46 @@ namespace Echec
         {
             Border variable = (Border)sender;
             Case CaseChoisie = (Case)variable.Tag;
-            Console.WriteLine(CaseChoisie.Ligne);
-            Console.WriteLine(CaseChoisie.Colonne);
+            //Condition pour la couleur remettre la couleur
+            if (caseSelectionnee != null)
+            {
+
+
+                if (CaseChoisie.Ligne == caseSelectionnee.Ligne && CaseChoisie.Colonne == caseSelectionnee.Colonne)
+                {
+                    if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
+                    {
+                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+                        caseSelectionnee = null;
+                        return;
+                    }
+                    else
+                    {
+                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                        caseSelectionnee = null;
+                        return;
+                    }
+                }
+                else
+                {
+                    if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
+                    {
+                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+                    }
+                    else
+                    {
+                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                        
+                    }
+
+                }
+            }
+            //Mémorisation de la case choisie
+            caseSelectionnee = CaseChoisie;
+
+            //Permet de changer la couleur de la case choisie
+            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Green;
+
         }
 
         private void Echiquier_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
