@@ -8,4 +8,36 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Image_Piece\CavalierB.png" />
+    <None Remove="Image_Piece\CavalierN.png" />
+    <None Remove="Image_Piece\DameB.png" />
+    <None Remove="Image_Piece\DameN.png" />
+    <None Remove="Image_Piece\FouB.png" />
+    <None Remove="Image_Piece\FouN.png" />
+    <None Remove="Image_Piece\PionB.png" />
+    <None Remove="Image_Piece\PionN.png" />
+    <None Remove="Image_Piece\RoiB.png" />
+    <None Remove="Image_Piece\RoiN.png" />
+    <None Remove="Image_Piece\TourB.png" />
+    <None Remove="Image_Piece\TourN.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Image_Piece\CavalierB.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Image_Piece\CavalierN.png" />
+    <Resource Include="Image_Piece\DameB.png" />
+    <Resource Include="Image_Piece\DameN.png" />
+    <Resource Include="Image_Piece\FouB.png" />
+    <Resource Include="Image_Piece\FouN.png" />
+    <Resource Include="Image_Piece\PionB.png" />
+    <Resource Include="Image_Piece\PionN.png" />
+    <Resource Include="Image_Piece\RoiB.png" />
+    <Resource Include="Image_Piece\RoiN.png" />
+    <Resource Include="Image_Piece\TourB.png" />
+    <Resource Include="Image_Piece\TourN.png" />
+  </ItemGroup>
+
 </Project>

@@ -8,5 +8,8 @@ namespace Echec
     {
         public int Ligne;
         public int Colonne;
+
+
+        public Piece Piece = null;
     }
 }
