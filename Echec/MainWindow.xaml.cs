@@ -443,7 +443,7 @@ namespace Echec
                             {
                                 if (caseSelectionnee.Piece.Couleur == CouleurPiece.Blanc)
                                 {
-                                    //Vérifie si le pion a le droit de se déplacer
+                                    //Vérifie si le pion blanc a le droit de se déplacer
                                     if (CaseChoisie.Ligne == caseSelectionnee.Ligne + 1 && CaseChoisie.Colonne == caseSelectionnee.Colonne && CaseChoisie.Piece == null)
                                     {
                                         //Récupère l'image de la pièce
@@ -468,18 +468,99 @@ namespace Echec
                                         {
                                             mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
                                         }
+                                        //Réinitialise la case selectionnée
+                                        caseSelectionnee = null;
+                                    }
+                                    else if(CaseChoisie.Ligne == caseSelectionnee.Ligne + 1 && (CaseChoisie.Colonne == caseSelectionnee.Colonne +1 || CaseChoisie.Colonne == caseSelectionnee.Colonne -1) && CaseChoisie.Piece is not null && CaseChoisie.Piece.Couleur == CouleurPiece.Noir)
+                                    {
+                                        //Récupère l'image de la pièce
+                                        Image imagePion = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
+                                        
+
+                                        //Enleve l'image de la pièce
+                                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child = null;
 
 
-                                        // La nouvelle case devient la case sélectionnée
-                                        caseSelectionnee = CaseChoisie;
+                                        mesGrilles[CaseChoisie.Ligne, CaseChoisie.Colonne].Child = imagePion;
 
-                                        // Mettre la nouvelle case en vert
-                                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Green;
+                                        CaseChoisie.Piece = caseSelectionnee.Piece;
+                                        caseSelectionnee.Piece = null;
+
+                                        if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+
+
+                                        }
+                                        else
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                                        }
+                                        //Réinitialise la case selectionnée
+                                        caseSelectionnee = null;
+                                    }
+                                }
+                                //Pion noir
+                                else
+                                {
+                                    if (CaseChoisie.Ligne == caseSelectionnee.Ligne - 1 && CaseChoisie.Colonne == caseSelectionnee.Colonne && CaseChoisie.Piece == null)
+                                    {
+                                        //Récupère l'image de la pièce
+                                        Image imagePieceDeplacement = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
+
+                                        //Enleve l'image de la pièce
+                                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child = null;
+                                        //Mets l'image de la pièce sur la nouvelle case
+                                        mesGrilles[CaseChoisie.Ligne, CaseChoisie.Colonne].Child = imagePieceDeplacement;
+
+                                        // Déplacement de la pièce
+                                        CaseChoisie.Piece = caseSelectionnee.Piece;
+                                        caseSelectionnee.Piece = null;
+
+                                        if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+
+
+                                        }
+                                        else
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                                        }
+                                        //Réinitialise la case selectionnée
+                                        caseSelectionnee = null;
+                                    }
+                                    else if (CaseChoisie.Ligne == caseSelectionnee.Ligne - 1 && (CaseChoisie.Colonne == caseSelectionnee.Colonne + 1 || CaseChoisie.Colonne == caseSelectionnee.Colonne - 1) && CaseChoisie.Piece is not null && CaseChoisie.Piece.Couleur == CouleurPiece.Blanc)
+                                    {
+                                        //Récupère l'image de la pièce
+                                        Image imagePion = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
+
+
+                                        //Enleve l'image de la pièce
+                                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child = null;
+
+                                        mesGrilles[CaseChoisie.Ligne, CaseChoisie.Colonne].Child = imagePion;
+
+                                        CaseChoisie.Piece = caseSelectionnee.Piece;
+                                        caseSelectionnee.Piece = null;
+
+                                        if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+
+
+                                        }
+                                        else
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                                        }
+                                        //Réinitialise la case selectionnée
+                                        caseSelectionnee = null;
+
 
 
                                     }
                                 }
-
                             }
                         }
                     }
