@@ -87,17 +87,6 @@ namespace Echec
                     //Chargement de l'échiquier dans l'interface
                     Echiquier.Children.Add(Grille);
 
-                    //Liaison pour les images
-                   /* BitmapImage bitmapImage = new BitmapImage();
-                    bitmapImage.BeginInit();
-                    bitmapImage.UriSource = new Uri(@"Image_Piece/TourB.png",UriKind.Relative);
-                    bitmapImage.EndInit();
-
-                    //Association image
-                    Image imagePiece = new Image();
-                    imagePiece.Source = bitmapImage;
-
-                    Grille.Child = imagePiece;*/
                 }
             }
             //Création des Pièces
@@ -219,6 +208,7 @@ namespace Echec
                 mesCases[6, c].Piece = pionN;
 
             }
+            //Attribution des pieces aux images
             for (int i = 0; i <= 7; i++) 
             { 
                 for (int c = 0; c <= 7; c++) 
@@ -253,6 +243,141 @@ namespace Echec
                                     mesGrilles[i, c].Child = imageP;
                                 }
                                 break;
+
+                            case TypePiece.Tour:
+                                if (mesCases[i,c].Piece.Couleur == CouleurPiece.Blanc)
+                                {
+                                    BitmapImage ImageTour = new BitmapImage();
+                                    ImageTour.BeginInit();
+                                    ImageTour.UriSource = new Uri(@"Image_Piece/TourB.png", UriKind.Relative);
+                                    ImageTour.EndInit();
+
+                                    Image ImageT = new Image();
+                                    ImageT.Source = ImageTour;
+
+                                    mesGrilles[i,c].Child = ImageT;
+                                }
+                                else
+                                {
+                                    BitmapImage ImageTour = new BitmapImage();
+                                    ImageTour.BeginInit();
+                                    ImageTour.UriSource = new Uri(@"Image_Piece/TourN.png", UriKind.Relative);
+                                    ImageTour.EndInit();
+
+                                    Image ImageT = new Image();
+                                    ImageT.Source = ImageTour;
+
+                                    mesGrilles[i, c].Child = ImageT;
+                                }
+                                break;
+
+                            case TypePiece.Cavalier:
+                                if (mesCases[i, c].Piece.Couleur == CouleurPiece.Blanc)
+                                {
+                                    BitmapImage ImageCavalier = new BitmapImage();
+                                    ImageCavalier.BeginInit();
+                                    ImageCavalier.UriSource = new Uri(@"Image_Piece/CavalierB.png", UriKind.Relative);
+                                    ImageCavalier.EndInit();
+
+                                    Image ImageC = new Image();
+                                    ImageC.Source = ImageCavalier;
+
+                                    mesGrilles[i, c].Child = ImageC;
+                                }
+                                else
+                                {
+                                    BitmapImage ImageCavalier = new BitmapImage();
+                                    ImageCavalier.BeginInit();
+                                    ImageCavalier.UriSource = new Uri(@"Image_Piece/CavalierN.png", UriKind.Relative);
+                                    ImageCavalier.EndInit();
+
+                                    Image ImageC = new Image();
+                                    ImageC.Source = ImageCavalier;
+
+                                    mesGrilles[i, c].Child = ImageC;
+                                }
+                                break;
+
+                            case TypePiece.Fou:
+                                if (mesCases[i, c].Piece.Couleur == CouleurPiece.Blanc)
+                                {
+                                    BitmapImage ImageFou = new BitmapImage();
+                                    ImageFou.BeginInit();
+                                    ImageFou.UriSource = new Uri(@"Image_Piece/FouB.png", UriKind.Relative);
+                                    ImageFou.EndInit();
+
+                                    Image ImageF = new Image();
+                                    ImageF.Source = ImageFou;
+
+                                    mesGrilles[i, c].Child = ImageF;
+                                }
+                                else
+                                {
+                                    BitmapImage ImageFou = new BitmapImage();
+                                    ImageFou.BeginInit();
+                                    ImageFou.UriSource = new Uri(@"Image_Piece/FouN.png", UriKind.Relative);
+                                    ImageFou.EndInit();
+
+                                    Image ImageF = new Image();
+                                    ImageF.Source = ImageFou;
+
+                                    mesGrilles[i, c].Child = ImageF;
+                                }
+                                break;
+
+                            case TypePiece.Dame:
+                                if (mesCases[i, c].Piece.Couleur == CouleurPiece.Blanc)
+                                {
+                                    BitmapImage ImageDame = new BitmapImage();
+                                    ImageDame.BeginInit();
+                                    ImageDame.UriSource = new Uri(@"Image_Piece/DameB.png", UriKind.Relative);
+                                    ImageDame.EndInit();
+
+                                    Image ImageD = new Image();
+                                    ImageD.Source = ImageDame;
+
+                                    mesGrilles[i, c].Child = ImageD;
+                                }
+                                else
+                                {
+                                    BitmapImage ImageDame = new BitmapImage();
+                                    ImageDame.BeginInit();
+                                    ImageDame.UriSource = new Uri(@"Image_Piece/DameN.png", UriKind.Relative);
+                                    ImageDame.EndInit();
+
+                                    Image ImageD = new Image();
+                                    ImageD.Source = ImageDame;
+
+                                    mesGrilles[i, c].Child = ImageD;
+                                }
+                                break;
+
+                            case TypePiece.Roi:
+                                if (mesCases[i, c].Piece.Couleur == CouleurPiece.Blanc)
+                                {
+                                    BitmapImage ImageRoi = new BitmapImage();
+                                    ImageRoi.BeginInit();
+                                    ImageRoi.UriSource = new Uri(@"Image_Piece/RoiB.png", UriKind.Relative);
+                                    ImageRoi.EndInit();
+
+                                    Image ImageR = new Image();
+                                    ImageR.Source = ImageRoi;
+
+                                    mesGrilles[i, c].Child = ImageR;
+                                }
+                                else
+                                {
+                                    BitmapImage ImageRoi = new BitmapImage();
+                                    ImageRoi.BeginInit();
+                                    ImageRoi.UriSource = new Uri(@"Image_Piece/RoiN.png", UriKind.Relative);
+                                    ImageRoi.EndInit();
+
+                                    Image ImageR = new Image();
+                                    ImageR.Source = ImageRoi;
+
+                                    mesGrilles[i, c].Child = ImageR;
+                                }
+                                break;
                         }
                             
                     } 
@@ -266,49 +391,101 @@ namespace Echec
             Border variable = (Border)sender;
             Case CaseChoisie = (Case)variable.Tag;
 
+            //caseSelectionnee est la case de départ
+            //caseChoisie est la case d'arrivée
+
+
+            // Si aucune case n'était sélectionnée
+            if (caseSelectionnee == null)
+            {
+                if (CaseChoisie.Piece is not null)
+                {
+                    caseSelectionnee = CaseChoisie;
+
+                    mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Green;
+                }
+                return;
+            }
+
             // Une case est-elle déjà sélectionnée ?
             if (caseSelectionnee != null)
             {
-                // Est-ce que je clique sur la même case ?
-                if (CaseChoisie.Ligne == caseSelectionnee.Ligne &&
-                    CaseChoisie.Colonne == caseSelectionnee.Colonne)
+                if (CaseChoisie is not null)
                 {
-                    // Remettre la couleur originale
-                    if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
+                    // Est-ce que je clique sur la même case ?
+                    if (CaseChoisie.Ligne == caseSelectionnee.Ligne &&
+                        CaseChoisie.Colonne == caseSelectionnee.Colonne)
                     {
-                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+                        // Remettre la couleur originale
+                        if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
+                        {
+                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+                        }
+                        else
+                        {
+                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                        }
+
+                        // Désélectionner
+                        caseSelectionnee = null;
+
+                        // Arrêter ici
+                        return;
                     }
                     else
                     {
-                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                        // Je clique sur une AUTRE case :
+                        // remettre l'ancienne case dans sa couleur originale
+
+                        if (caseSelectionnee.Piece is not null)
+                        {
+                            if (caseSelectionnee.Piece.Type == TypePiece.Pion)
+                            {
+                                if (caseSelectionnee.Piece.Couleur == CouleurPiece.Blanc)
+                                {
+                                    //Vérifie si le pion a le droit de se déplacer
+                                    if (CaseChoisie.Ligne == caseSelectionnee.Ligne + 1 && CaseChoisie.Colonne == caseSelectionnee.Colonne && CaseChoisie.Piece == null)
+                                    {
+                                        //Récupère l'image de la pièce
+                                        Image imagePieceDeplacement = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
+
+                                        //Enleve l'image de la pièce
+                                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child = null;
+                                        //Mets l'image de la pièce sur la nouvelle case
+                                        mesGrilles[CaseChoisie.Ligne, CaseChoisie.Colonne].Child = imagePieceDeplacement;
+
+                                        // Déplacement de la pièce
+                                        CaseChoisie.Piece = caseSelectionnee.Piece;
+                                        caseSelectionnee.Piece = null;
+
+                                        if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+
+
+                                        }
+                                        else
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                                        }
+
+
+                                        // La nouvelle case devient la case sélectionnée
+                                        caseSelectionnee = CaseChoisie;
+
+                                        // Mettre la nouvelle case en vert
+                                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Green;
+
+
+                                    }
+                                }
+
+                            }
+                        }
                     }
 
-                    // Désélectionner
-                    caseSelectionnee = null;
-
-                    // Arrêter ici
-                    return;
-                }
-                else
-                {
-                    // Je clique sur une AUTRE case :
-                    // remettre l'ancienne case dans sa couleur originale
-                    if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
-                    {
-                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
-                    }
-                    else
-                    {
-                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
-                    }
                 }
             }
-
-            // Mémorisation de la nouvelle case choisie
-            caseSelectionnee = CaseChoisie;
-
-            // Mettre la nouvelle case en vert
-            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Green;
         }
 
         private void Echiquier_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
