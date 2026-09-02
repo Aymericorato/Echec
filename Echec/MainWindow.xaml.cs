@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.Eventing.Reader;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Windows;
@@ -18,6 +19,7 @@ namespace Echec
     /// </summary>
     public partial class MainWindow : Window
     {
+        //Variable
         //Garde en mémoire l'existance un tableau de 64 cases
         Case[,] mesCases = new Case[8, 8];
 
@@ -25,6 +27,7 @@ namespace Echec
         Border[,] mesGrilles = new Border[8, 8];
 
         Case caseSelectionnee;
+        Case dernierPionDeuxCases = null;
 
 
 
@@ -391,11 +394,8 @@ namespace Echec
             Border variable = (Border)sender;
             Case CaseChoisie = (Case)variable.Tag;
 
-            //caseSelectionnee est la case de départ
-            //caseChoisie est la case d'arrivée
 
-
-            // Si aucune case n'était sélectionnée
+            // Conditions permettant de changer la couleur de la case sélectionnée
             if (caseSelectionnee == null)
             {
                 if (CaseChoisie.Piece is not null)
@@ -435,12 +435,13 @@ namespace Echec
                     else
                     {
                         // Je clique sur une AUTRE case :
-                        // remettre l'ancienne case dans sa couleur originale
 
                         if (caseSelectionnee.Piece is not null)
                         {
+                            //Condition qui vérifie la pièce cliqué est un pion
                             if (caseSelectionnee.Piece.Type == TypePiece.Pion)
                             {
+                                //Vérifie si c'est un pion blanc
                                 if (caseSelectionnee.Piece.Couleur == CouleurPiece.Blanc)
                                 {
                                     //Vérifie si le pion blanc a le droit de se déplacer
@@ -468,21 +469,55 @@ namespace Echec
                                         {
                                             mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
                                         }
+                                        dernierPionDeuxCases = null;
                                         //Réinitialise la case selectionnée
                                         caseSelectionnee = null;
                                     }
-                                    else if(CaseChoisie.Ligne == caseSelectionnee.Ligne + 1 && (CaseChoisie.Colonne == caseSelectionnee.Colonne +1 || CaseChoisie.Colonne == caseSelectionnee.Colonne -1) && CaseChoisie.Piece is not null && CaseChoisie.Piece.Couleur == CouleurPiece.Noir)
+
+                                    //Conditions pour manger une pièce
+                                    else if (CaseChoisie.Ligne == caseSelectionnee.Ligne + 1 && (CaseChoisie.Colonne == caseSelectionnee.Colonne + 1 || CaseChoisie.Colonne == caseSelectionnee.Colonne - 1) && CaseChoisie.Piece is not null && CaseChoisie.Piece.Couleur == CouleurPiece.Noir)
                                     {
+
                                         //Récupère l'image de la pièce
                                         Image imagePion = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
-                                        
 
                                         //Enleve l'image de la pièce
                                         mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child = null;
 
-
+                                        //Remplace l'image de la pièce manger
                                         mesGrilles[CaseChoisie.Ligne, CaseChoisie.Colonne].Child = imagePion;
 
+                                        //Déplacement de la pièce
+                                        CaseChoisie.Piece = caseSelectionnee.Piece;
+                                        caseSelectionnee.Piece = null;
+
+                                        //Conditions pour remettre la couleur des pièces
+                                        if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+                                        }
+                                        else
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                                        }
+
+                                        dernierPionDeuxCases = null;
+                                        //Réinitialise la case selectionnée
+                                        caseSelectionnee = null;
+                                    }
+
+                                    //Conditions pour permettre l'avancement de 2 cases d'un pion
+                                    else if (caseSelectionnee.Ligne == 1 && CaseChoisie.Ligne == caseSelectionnee.Ligne + 2 && CaseChoisie.Colonne == caseSelectionnee.Colonne && CaseChoisie.Piece == null && mesCases[caseSelectionnee.Ligne + 1, caseSelectionnee.Colonne].Piece == null)
+                                    {
+                                        //Récupère l'image de la pièce
+                                        Image imagePieceDeplacement = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
+
+                                        //Enleve l'image de la pièce
+                                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child = null;
+                                        //Mets l'image de la pièce sur la nouvelle case
+                                        mesGrilles[CaseChoisie.Ligne, CaseChoisie.Colonne].Child = imagePieceDeplacement;
+
+                                        // Déplacement de la pièce
                                         CaseChoisie.Piece = caseSelectionnee.Piece;
                                         caseSelectionnee.Piece = null;
 
@@ -496,13 +531,61 @@ namespace Echec
                                         {
                                             mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
                                         }
+                                        //Enregistre la dernière pièces ayant fait un avancement de deux cases
+                                        dernierPionDeuxCases = mesCases[CaseChoisie.Ligne, CaseChoisie.Colonne];
                                         //Réinitialise la case selectionnée
                                         caseSelectionnee = null;
+
                                     }
+
+                                    //Conditions pour la prise en passant
+                                    else if (CaseChoisie.Ligne == caseSelectionnee.Ligne + 1
+                                        && (CaseChoisie.Colonne == caseSelectionnee.Colonne + 1 || CaseChoisie.Colonne == caseSelectionnee.Colonne - 1)
+                                        && CaseChoisie.Piece is null
+                                        && dernierPionDeuxCases is not null
+                                        && caseSelectionnee.Ligne == dernierPionDeuxCases.Ligne
+                                        && dernierPionDeuxCases.Piece.Couleur == CouleurPiece.Noir
+                                        && dernierPionDeuxCases.Piece.Type == TypePiece.Pion
+                                        && (dernierPionDeuxCases.Colonne == caseSelectionnee.Colonne + 1 || dernierPionDeuxCases.Colonne == caseSelectionnee.Colonne - 1))
+                                    {
+                                        //Récupère l'image de la pièce
+                                        Image imagePieceDeplacement = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
+
+                                        //Enleve l'image de la pièce
+                                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child = null;
+                                        mesGrilles[dernierPionDeuxCases.Ligne, dernierPionDeuxCases.Colonne].Child = null;
+
+                                        dernierPionDeuxCases.Piece = null;
+
+                                        //Mets l'image de la pièce sur la nouvelle case
+                                        mesGrilles[CaseChoisie.Ligne, CaseChoisie.Colonne].Child = imagePieceDeplacement;
+
+                                        // Déplacement de la pièce
+                                        CaseChoisie.Piece = caseSelectionnee.Piece;
+                                        caseSelectionnee.Piece = null;
+
+                                        if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+
+
+                                        }
+                                        else
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                                        }
+
+                                        dernierPionDeuxCases = null;
+                                        //Réinitialise la case selectionnée
+                                        caseSelectionnee = null;
+
+                                    }
+
                                 }
                                 //Pion noir
                                 else
                                 {
+                                    //Vérifie si le pion noir a le droit de se déplacer
                                     if (CaseChoisie.Ligne == caseSelectionnee.Ligne - 1 && CaseChoisie.Colonne == caseSelectionnee.Colonne && CaseChoisie.Piece == null)
                                     {
                                         //Récupère l'image de la pièce
@@ -527,9 +610,11 @@ namespace Echec
                                         {
                                             mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
                                         }
+                                        dernierPionDeuxCases = null;
                                         //Réinitialise la case selectionnée
                                         caseSelectionnee = null;
                                     }
+                                    //Conditions pour manger une pièce
                                     else if (CaseChoisie.Ligne == caseSelectionnee.Ligne - 1 && (CaseChoisie.Colonne == caseSelectionnee.Colonne + 1 || CaseChoisie.Colonne == caseSelectionnee.Colonne - 1) && CaseChoisie.Piece is not null && CaseChoisie.Piece.Couleur == CouleurPiece.Blanc)
                                     {
                                         //Récupère l'image de la pièce
@@ -554,20 +639,284 @@ namespace Echec
                                         {
                                             mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
                                         }
+                                        dernierPionDeuxCases = null;
+                                        //Réinitialise la case selectionnée
+                                        caseSelectionnee = null;
+                                    }
+                                    //Conditions pour vérifier l'avancement de 2 cases d'un pion
+                                    else if (caseSelectionnee.Ligne == 6 && CaseChoisie.Ligne == caseSelectionnee.Ligne - 2 && CaseChoisie.Colonne == caseSelectionnee.Colonne && CaseChoisie.Piece == null && mesCases[caseSelectionnee.Ligne - 1, caseSelectionnee.Colonne].Piece == null)
+                                    {
+                                        //Récupère l'image de la pièce
+                                        Image imagePieceDeplacement = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
+
+                                        //Enleve l'image de la pièce
+                                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child = null;
+                                        //Mets l'image de la pièce sur la nouvelle case
+                                        mesGrilles[CaseChoisie.Ligne, CaseChoisie.Colonne].Child = imagePieceDeplacement;
+
+                                        // Déplacement de la pièce
+                                        CaseChoisie.Piece = caseSelectionnee.Piece;
+                                        caseSelectionnee.Piece = null;
+
+                                        if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+
+
+                                        }
+                                        else
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                                        }
+                                        //Enregistre la dernière pièces ayant fait un avancement de deux cases
+                                        dernierPionDeuxCases = mesCases[CaseChoisie.Ligne, CaseChoisie.Colonne];
                                         //Réinitialise la case selectionnée
                                         caseSelectionnee = null;
 
+                                    }
+                                    //Conditions pour la prise en passant
+                                    else if (CaseChoisie.Ligne == caseSelectionnee.Ligne - 1
+                                        && (CaseChoisie.Colonne == caseSelectionnee.Colonne + 1 || CaseChoisie.Colonne == caseSelectionnee.Colonne - 1)
+                                        && CaseChoisie.Piece is null
+                                        && dernierPionDeuxCases is not null
+                                        && caseSelectionnee.Ligne == dernierPionDeuxCases.Ligne
+                                        && dernierPionDeuxCases.Piece.Couleur == CouleurPiece.Blanc
+                                        && dernierPionDeuxCases.Piece.Type == TypePiece.Pion
+                                        && (dernierPionDeuxCases.Colonne == caseSelectionnee.Colonne + 1 || dernierPionDeuxCases.Colonne == caseSelectionnee.Colonne - 1))
+                                    {
+                                        //Récupère l'image de la pièce
+                                        Image imagePieceDeplacement = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
 
+                                        //Enleve l'image de la pièce
+                                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child = null;
+                                        mesGrilles[dernierPionDeuxCases.Ligne, dernierPionDeuxCases.Colonne].Child = null;
+
+                                        dernierPionDeuxCases.Piece = null;
+
+                                        //Mets l'image de la pièce sur la nouvelle case
+                                        mesGrilles[CaseChoisie.Ligne, CaseChoisie.Colonne].Child = imagePieceDeplacement;
+
+                                        // Déplacement de la pièce
+                                        CaseChoisie.Piece = caseSelectionnee.Piece;
+                                        caseSelectionnee.Piece = null;
+
+                                        if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+
+
+                                        }
+                                        else
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                                        }
+
+                                        dernierPionDeuxCases = null;
+                                        //Réinitialise la case selectionnée
+                                        caseSelectionnee = null;
 
                                     }
+                                }
+
+                            }
+                            //Condition qui vérifie la pièce cliqué est une tour
+                            else if (caseSelectionnee.Piece.Type == TypePiece.Tour)
+                            {
+                                // Vérifie si la tour peut se déplacer
+                                if ((CaseChoisie.Ligne != caseSelectionnee.Ligne && CaseChoisie.Colonne == caseSelectionnee.Colonne || CaseChoisie.Colonne != caseSelectionnee.Colonne && CaseChoisie.Ligne == caseSelectionnee.Ligne) && (CaseChoisie.Piece == null || CaseChoisie.Piece.Couleur != caseSelectionnee.Piece.Couleur))
+                                {
+                                    bool cheminLibre = true;
+
+                                    // Déplacement horizontal
+                                    if (caseSelectionnee.Ligne == CaseChoisie.Ligne)
+                                    {
+                                        // Vers la droite
+                                        if (caseSelectionnee.Colonne < CaseChoisie.Colonne)
+                                        {
+                                            for (int i = caseSelectionnee.Colonne + 1; i < CaseChoisie.Colonne; i++)
+                                            {
+                                                if (mesCases[caseSelectionnee.Ligne, i].Piece is not null)
+                                                {
+                                                    cheminLibre = false;
+                                                }
+                                            }
+                                        }
+                                        // Vers la gauche
+                                        else
+                                        {
+                                            for (int i = caseSelectionnee.Colonne - 1; i > CaseChoisie.Colonne; i--)
+                                            {
+                                                if (mesCases[caseSelectionnee.Ligne, i].Piece is not null)
+                                                {
+                                                    cheminLibre = false;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    // Déplacement vertical
+                                    else
+                                    {
+                                        // Vers le bas
+                                        if (caseSelectionnee.Ligne < CaseChoisie.Ligne)
+                                        {
+                                            for (int i = caseSelectionnee.Ligne + 1; i < CaseChoisie.Ligne; i++)
+                                            {
+                                                if (mesCases[i, caseSelectionnee.Colonne].Piece is not null)
+                                                {
+                                                    cheminLibre = false;
+                                                }
+                                            }
+                                        }
+                                        // Vers le haut
+                                        else
+                                        {
+                                            for (int i = caseSelectionnee.Ligne - 1; i > CaseChoisie.Ligne; i--)
+                                            {
+                                                if (mesCases[i, caseSelectionnee.Colonne].Piece is not null)
+                                                {
+                                                    cheminLibre = false;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // Déplacement si le chemin est libre
+                                    if (cheminLibre == true)
+                                    {
+                                        //Récupère l'image de la pièce
+                                        Image imagePieceDeplacement = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
+
+                                        //Enleve l'image de la pièce
+                                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child = null;
+
+                                        //Mets l'image de la pièce sur la nouvelle case
+                                        mesGrilles[CaseChoisie.Ligne, CaseChoisie.Colonne].Child = imagePieceDeplacement;
+
+                                        // Déplacement de la pièce
+                                        CaseChoisie.Piece = caseSelectionnee.Piece;
+                                        caseSelectionnee.Piece = null;
+
+                                        //Condition qui remet les couleurs sur l'échiquier
+                                        if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+                                        }
+                                        else
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                                        }
+
+                                        //Oublie si un pion à avancer de deux cases
+                                        dernierPionDeuxCases = null;
+
+                                        //Oublie la derniere piece bouger
+                                        caseSelectionnee = null;
+                                    }
+                                }
+                            }
+                            //Condition qui vérifie la pièce cliqué est un fou
+                            else if (caseSelectionnee.Piece.Type == TypePiece.Fou)
+                            {
+                                // Vérifie si le fou peut se déplacer
+                                if ((Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne)) == (Math.Abs(CaseChoisie.Colonne - caseSelectionnee.Colonne))&& Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne) !=0 && (CaseChoisie.Piece == null || CaseChoisie.Piece.Couleur != caseSelectionnee.Piece.Couleur))
+                                {
+                                    bool cheminLibre = true;
+                                    //Dépacement Diagonale
+                                    if (caseSelectionnee.Ligne < CaseChoisie.Ligne && caseSelectionnee.Colonne < CaseChoisie.Colonne)
+                                    {
+                                        for (int i = 0; i < Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne) - 1; i++)
+                                        {
+                                            int LigneVerif = caseSelectionnee.Ligne + i + 1;
+                                            int ColonneVerif = caseSelectionnee.Colonne + i + 1;
+                                            if (mesCases[LigneVerif, ColonneVerif].Piece is not null)
+                                            {
+                                                cheminLibre = false;
+                                            }
+
+                                        }
+                                    }
+                                    else if(caseSelectionnee.Ligne < CaseChoisie.Ligne && caseSelectionnee.Colonne > CaseChoisie.Colonne)
+                                    {
+                                        for (int i = 0; i < Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne) - 1; i++)
+                                        {
+                                            int LigneVerif = caseSelectionnee.Ligne + i + 1;
+                                            int ColonneVerif = caseSelectionnee.Colonne - i - 1;
+                                            if (mesCases[LigneVerif, ColonneVerif].Piece is not null)
+                                            {
+                                                cheminLibre = false;
+                                            }
+
+                                        }
+                                    }
+                                    else if (caseSelectionnee.Ligne > CaseChoisie.Ligne && caseSelectionnee.Colonne < CaseChoisie.Colonne)
+                                    {
+                                        for (int i = 0; i < Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne) - 1; i++)
+                                        {
+                                            int LigneVerif = caseSelectionnee.Ligne - i - 1;
+                                            int ColonneVerif = caseSelectionnee.Colonne + i + 1;
+                                            if (mesCases[LigneVerif, ColonneVerif].Piece is not null)
+                                            {
+                                                cheminLibre = false;
+                                            }
+
+                                        }
+                                    }
+                                    else if(caseSelectionnee.Ligne > CaseChoisie.Ligne && caseSelectionnee.Colonne > CaseChoisie.Colonne)
+                                    {
+
+                                        for (int i = 0; i < Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne) - 1; i++)
+                                        {
+                                            int LigneVerif = caseSelectionnee.Ligne - i - 1;
+                                            int ColonneVerif = caseSelectionnee.Colonne - i - 1;
+                                            if (mesCases[LigneVerif, ColonneVerif].Piece is not null)
+                                            {
+                                                cheminLibre = false;
+                                            }
+
+                                        }
+                                    }
+                                        // Déplacement si le chemin est libre
+                                        if (cheminLibre == true)
+                                        {
+                                            //Récupère l'image de la pièce
+                                            Image imagePieceDeplacement = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
+
+                                            //Enleve l'image de la pièce
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child = null;
+
+                                            //Mets l'image de la pièce sur la nouvelle case
+                                            mesGrilles[CaseChoisie.Ligne, CaseChoisie.Colonne].Child = imagePieceDeplacement;
+
+                                            // Déplacement de la pièce
+                                            CaseChoisie.Piece = caseSelectionnee.Piece;
+                                            caseSelectionnee.Piece = null;
+
+                                            //Condition qui remet les couleurs sur l'échiquier
+                                            if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
+                                            {
+                                                mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+                                            }
+                                            else
+                                            {
+                                                mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                                            }
+
+                                            //Oublie si un pion à avancer de deux cases
+                                            dernierPionDeuxCases = null;
+
+                                            //Oublie la derniere piece bouger
+                                            caseSelectionnee = null;
+                                        }  
                                 }
                             }
                         }
                     }
-
                 }
             }
         }
+
+
+
 
         private void Echiquier_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
