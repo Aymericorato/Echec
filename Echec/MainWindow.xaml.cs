@@ -20,7 +20,7 @@ namespace Echec
     public partial class MainWindow : Window
     {
         //Variable
-        //Garde en mémoire l'existance un tableau de 64 cases
+        //Garde en mémoire les cases
         Case[,] mesCases = new Case[8, 8];
 
         //Garde en mémoire l'existance de la grille
@@ -29,13 +29,290 @@ namespace Echec
         Case caseSelectionnee;
         Case dernierPionDeuxCases = null;
 
+        //Méthode qui vérifie si une case est attaquée
+        bool CaseEstAttaquee(Case caseAVerifier, CouleurPiece couleurRoi)
+        {
 
+            //Boucle pour les lignes
+            for (int l = 0; l <= 7; l++)
+            {
+                //boucle pour les colonnes
+                for (int c = 0; c <= 7; c++)
+                {
+                    //Conditions qui vérifie que la pièce déplacer n'est pas null et est différente du roi adverse
+                    if (mesCases[l, c].Piece is not null && mesCases[l, c].Piece.Couleur != couleurRoi)
+                    {
+                        //switch case pour le type de pièce
+                        switch (mesCases[l, c].Piece.Type)
+                        {
+                            //Conditions qui bloque, pour le roi adverse, les cases d'attaques des pions
+                            case TypePiece.Pion:
+                                if (mesCases[l, c].Piece.Couleur == CouleurPiece.Noir && ((caseAVerifier.Colonne == c - 1 && caseAVerifier.Ligne == l - 1) || (caseAVerifier.Colonne == c + 1 && caseAVerifier.Ligne == l - 1)))
+                                {
+                                    return true;
+                                }
+                                else if (mesCases[l, c].Piece.Couleur == CouleurPiece.Blanc && ((caseAVerifier.Colonne == c - 1 && caseAVerifier.Ligne == l + 1) || (caseAVerifier.Colonne == c + 1 && caseAVerifier.Ligne == l + 1)))
+                                {
+                                    return true;
+                                }
+                                break;
+                            //Conditions qui bloque, pour le roi adverse, les cases d'attaques des tours
+                            case TypePiece.Tour:
+                                bool cheminLibreT = true;
+                                if ( caseAVerifier.Ligne == l && caseAVerifier.Colonne != c)
+                                {
+                                    // Déplacement horizontal
+                                    if (c < caseAVerifier.Colonne)
+                                    {
+                                        for (int i = c + 1; i < caseAVerifier.Colonne; i++)
+                                        {
+                                            if (mesCases[l, i].Piece is not null)
+                                            {
+                                                cheminLibreT = false;
+                                            }
+                                        }
+                                        if (cheminLibreT == true)
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        for (int i = c - 1; i > caseAVerifier.Colonne; i--)
+                                        {
+                                            if (mesCases[l, i].Piece is not null)
+                                            {
+                                                cheminLibreT = false;
+                                            }
+                                        }
+                                        if (cheminLibreT == true)
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                }
+                                else if(caseAVerifier.Colonne == c && caseAVerifier.Ligne !=l)
+                                {
+                                    if (l < caseAVerifier.Ligne)
+                                    {
+                                        for (int i = l + 1; i < caseAVerifier.Ligne; i++)
+                                        {
+                                            if (mesCases[i, c].Piece is not null)
+                                            {
+                                                cheminLibreT = false;
+                                            }
+                                        }
+                                        if (cheminLibreT == true)
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        for (int i = l - 1; i > caseAVerifier.Ligne; i--)
+                                        {
+                                            if (mesCases[i, c].Piece is not null)
+                                            {
+                                                cheminLibreT = false;
+                                            }
+                                        }
+                                        if (cheminLibreT == true)
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                }
+                                break;
+                            //Conditions qui bloque, pour le roi adverse, les cases d'attaques des cavaliers
+                            case TypePiece.Cavalier:
+                                if ((Math.Abs(caseAVerifier.Ligne - l) == 2 && Math.Abs(caseAVerifier.Colonne - c) == 1) || (Math.Abs(caseAVerifier.Ligne - l) == 1 && Math.Abs(caseAVerifier.Colonne - c) == 2))
+                                {
+                                    return true;
+                                }
+                                break;
+                            //Conditions qui bloque, pour le roi adverse, les cases d'attaques des fous
+                            case TypePiece.Fou:
+                                bool cheminLibreF = true;
+                                if (Math.Abs(caseAVerifier.Ligne - l) != 0 && Math.Abs(caseAVerifier.Colonne - c) != 0 && Math.Abs(caseAVerifier.Ligne - l) == Math.Abs(caseAVerifier.Colonne - c))
+                                {
+                                    if (caseAVerifier.Ligne < l && caseAVerifier.Colonne < c)
+                                    {
+                                        for (int i = 0; i < Math.Abs(caseAVerifier.Ligne - l) - 1; i++)
+                                        {
+                                            int LigneVerif = caseAVerifier.Ligne + i + 1;
+                                            int ColonneVerif = caseAVerifier.Colonne + i + 1;
+                                            if (mesCases[LigneVerif, ColonneVerif].Piece is not null)
+                                            {
+                                                cheminLibreF = false;
+                                            }
+                                        }
+                                    }
+                                    else if (caseAVerifier.Ligne < l && caseAVerifier.Colonne > c)
+                                    {
+                                        for (int i = 0; i < Math.Abs(caseAVerifier.Ligne - l) - 1; i++)
+                                        {
+                                            int LigneVerif = caseAVerifier.Ligne + i + 1;
+                                            int ColonneVerif = caseAVerifier.Colonne - i - 1;
+                                            if (mesCases[LigneVerif, ColonneVerif].Piece is not null)
+                                            {
+                                                cheminLibreF = false;
+                                            }
+                                        }
+                                    }
+                                    else if (caseAVerifier.Ligne > l && caseAVerifier.Colonne < c)
+                                    {
+                                        for (int i = 0; i < Math.Abs(caseAVerifier.Ligne - l) - 1; i++)
+                                        {
+                                            int LigneVerif = caseAVerifier.Ligne - i - 1;
+                                            int ColonneVerif = caseAVerifier.Colonne + i + 1;
+                                            if (mesCases[LigneVerif, ColonneVerif].Piece is not null)
+                                            {
+                                                cheminLibreF = false;
+                                            }
+                                        }
+                                    }
+                                    else if (caseAVerifier.Ligne > l && caseAVerifier.Colonne > c)
+                                    {
+                                        for (int i = 0; i < Math.Abs(caseAVerifier.Ligne - l) - 1; i++)
+                                        {
+                                            int LigneVerif = caseAVerifier.Ligne - i - 1;
+                                            int ColonneVerif = caseAVerifier.Colonne - i - 1;
+                                            if (mesCases[LigneVerif, ColonneVerif].Piece is not null)
+                                            {
+                                                cheminLibreF = false;
+                                            }
+                                        }
+                                    }
+                                    if (cheminLibreF == true)
+                                    {
+                                        return true;
+                                    }
+                                }
+                                break;
+                            //Conditions qui bloque, pour le roi adverse, les cases d'attaques des dames
+                            case TypePiece.Dame:
+                                bool cheminLibreD = true;
+                                if ((caseAVerifier.Colonne == c && caseAVerifier.Ligne != l) || (caseAVerifier.Colonne != c && caseAVerifier.Ligne == l) || (Math.Abs(caseAVerifier.Ligne - l) != 0 && Math.Abs(caseAVerifier.Colonne - c) != 0 && Math.Abs(caseAVerifier.Ligne - l) == Math.Abs(caseAVerifier.Colonne - c)))
+                                {
+                                    if (caseAVerifier.Ligne == l)
+                                    {
+                                        //Déplacement horizontal
+                                        if (c < caseAVerifier.Colonne)
+                                        {
+                                            for (int i = c + 1; i < caseAVerifier.Colonne; i++)
+                                            {
+                                                if (mesCases[l, i].Piece is not null)
+                                                {
+                                                    cheminLibreD = false;
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            for (int i = c - 1; i > caseAVerifier.Colonne; i--)
+                                            {
+                                                if (mesCases[l, i].Piece is not null)
+                                                {
+                                                    cheminLibreD = false;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else if (caseAVerifier.Colonne == c)
+                                    {
+                                        if (l < caseAVerifier.Ligne)
+                                        {
+                                            for (int i = l + 1; i < caseAVerifier.Ligne; i++)
+                                            {
+                                                if (mesCases[i, c].Piece is not null)
+                                                {
+                                                    cheminLibreD = false;
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            for (int i = l - 1; i > caseAVerifier.Ligne; i--)
+                                            {
+                                                if (mesCases[i, c].Piece is not null)
+                                                {
+                                                    cheminLibreD = false;
+                                                }
+                                            }
+                                        }
 
-
-
-
-
-
+                                    }
+                                    else if (caseAVerifier.Ligne < l && caseAVerifier.Colonne < c)
+                                    {
+                                        for (int i = 0; i < Math.Abs(caseAVerifier.Ligne - l) - 1; i++)
+                                        {
+                                            int LigneVerif = caseAVerifier.Ligne + i + 1;
+                                            int ColonneVerif = caseAVerifier.Colonne + i + 1;
+                                            if (mesCases[LigneVerif, ColonneVerif].Piece is not null)
+                                            {
+                                                cheminLibreD = false;
+                                            }
+                                        }
+                                    }
+                                    else if (caseAVerifier.Ligne < l && caseAVerifier.Colonne > c)
+                                    {
+                                        for (int i = 0; i < Math.Abs(caseAVerifier.Ligne - l) - 1; i++)
+                                        {
+                                            int LigneVerif = caseAVerifier.Ligne + i + 1;
+                                            int ColonneVerif = caseAVerifier.Colonne - i - 1;
+                                            if (mesCases[LigneVerif, ColonneVerif].Piece is not null)
+                                            {
+                                                cheminLibreD = false;
+                                            }
+                                        }
+                                    }
+                                    else if (caseAVerifier.Ligne > l && caseAVerifier.Colonne < c)
+                                    {
+                                        for (int i = 0; i < Math.Abs(caseAVerifier.Ligne - l) - 1; i++)
+                                        {
+                                            int LigneVerif = caseAVerifier.Ligne - i - 1;
+                                            int ColonneVerif = caseAVerifier.Colonne + i + 1;
+                                            if (mesCases[LigneVerif, ColonneVerif].Piece is not null)
+                                            {
+                                                cheminLibreD = false;
+                                            }
+                                        }
+                                    }
+                                    else if (caseAVerifier.Ligne > l && caseAVerifier.Colonne > c)
+                                    {
+                                        for (int i = 0; i < Math.Abs(caseAVerifier.Ligne - l) - 1; i++)
+                                        {
+                                            int LigneVerif = caseAVerifier.Ligne - i - 1;
+                                            int ColonneVerif = caseAVerifier.Colonne - i - 1;
+                                            if (mesCases[LigneVerif, ColonneVerif].Piece is not null)
+                                            {
+                                                cheminLibreD = false;
+                                            }
+                                        }
+                                    }
+                                    if (cheminLibreD == true)
+                                    {
+                                        return true;
+                                    }
+                                }
+                                break;
+                            //Conditions qui bloque, pour le roi adverse, les cases d'attaques des rois
+                            case TypePiece.Roi:
+                                if ((Math.Abs(caseAVerifier.Ligne - l) <= 1
+                                    && Math.Abs(caseAVerifier.Colonne - c) <= 1
+                                    && (Math.Abs(caseAVerifier.Ligne - l) != 0
+                                    || Math.Abs(caseAVerifier.Colonne - c) != 0)))
+                                {
+                                    return true;
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+            return false;
+       
+        }
 
 
 
@@ -445,7 +722,7 @@ namespace Echec
                                 if (caseSelectionnee.Piece.Couleur == CouleurPiece.Blanc)
                                 {
                                     //Vérifie si le pion blanc a le droit de se déplacer
-                                    if (CaseChoisie.Ligne == caseSelectionnee.Ligne + 1 && CaseChoisie.Colonne == caseSelectionnee.Colonne && CaseChoisie.Piece == null)
+                                    if (CaseChoisie.Ligne == caseSelectionnee.Ligne + 1 && CaseChoisie.Colonne == caseSelectionnee.Colonne && (CaseChoisie.Piece == null || CaseChoisie.Piece.Couleur != caseSelectionnee.Piece.Couleur))
                                     {
                                         //Récupère l'image de la pièce
                                         Image imagePieceDeplacement = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
@@ -818,7 +1095,7 @@ namespace Echec
                             else if (caseSelectionnee.Piece.Type == TypePiece.Fou)
                             {
                                 // Vérifie si le fou peut se déplacer
-                                if ((Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne)) == (Math.Abs(CaseChoisie.Colonne - caseSelectionnee.Colonne))&& Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne) !=0 && (CaseChoisie.Piece == null || CaseChoisie.Piece.Couleur != caseSelectionnee.Piece.Couleur))
+                                if ((Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne)) == (Math.Abs(CaseChoisie.Colonne - caseSelectionnee.Colonne)) && Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne) != 0 && (CaseChoisie.Piece == null || CaseChoisie.Piece.Couleur != caseSelectionnee.Piece.Couleur))
                                 {
                                     bool cheminLibre = true;
                                     //Dépacement Diagonale
@@ -835,7 +1112,7 @@ namespace Echec
 
                                         }
                                     }
-                                    else if(caseSelectionnee.Ligne < CaseChoisie.Ligne && caseSelectionnee.Colonne > CaseChoisie.Colonne)
+                                    else if (caseSelectionnee.Ligne < CaseChoisie.Ligne && caseSelectionnee.Colonne > CaseChoisie.Colonne)
                                     {
                                         for (int i = 0; i < Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne) - 1; i++)
                                         {
@@ -861,7 +1138,7 @@ namespace Echec
 
                                         }
                                     }
-                                    else if(caseSelectionnee.Ligne > CaseChoisie.Ligne && caseSelectionnee.Colonne > CaseChoisie.Colonne)
+                                    else if (caseSelectionnee.Ligne > CaseChoisie.Ligne && caseSelectionnee.Colonne > CaseChoisie.Colonne)
                                     {
 
                                         for (int i = 0; i < Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne) - 1; i++)
@@ -875,38 +1152,290 @@ namespace Echec
 
                                         }
                                     }
-                                        // Déplacement si le chemin est libre
-                                        if (cheminLibre == true)
+                                    // Déplacement si le chemin est libre
+                                    if (cheminLibre == true)
+                                    {
+                                        //Récupère l'image de la pièce
+                                        Image imagePieceDeplacement = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
+
+                                        //Enleve l'image de la pièce
+                                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child = null;
+
+                                        //Mets l'image de la pièce sur la nouvelle case
+                                        mesGrilles[CaseChoisie.Ligne, CaseChoisie.Colonne].Child = imagePieceDeplacement;
+
+                                        // Déplacement de la pièce
+                                        CaseChoisie.Piece = caseSelectionnee.Piece;
+                                        caseSelectionnee.Piece = null;
+
+                                        //Condition qui remet les couleurs sur l'échiquier
+                                        if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
                                         {
-                                            //Récupère l'image de la pièce
-                                            Image imagePieceDeplacement = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+                                        }
+                                        else
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                                        }
 
-                                            //Enleve l'image de la pièce
-                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child = null;
+                                        //Oublie si un pion à avancer de deux cases
+                                        dernierPionDeuxCases = null;
 
-                                            //Mets l'image de la pièce sur la nouvelle case
-                                            mesGrilles[CaseChoisie.Ligne, CaseChoisie.Colonne].Child = imagePieceDeplacement;
+                                        //Oublie la derniere piece bouger
+                                        caseSelectionnee = null;
+                                    }
+                                }
+                            }
+                            //Condition qui vérifie la pièce cliqué est un cavalier
+                            else if (caseSelectionnee.Piece.Type == TypePiece.Cavalier)
+                            {
+                                if (((Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne)) == 2 && Math.Abs(CaseChoisie.Colonne - caseSelectionnee.Colonne) == 1 || (Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne)) == 1 && Math.Abs(CaseChoisie.Colonne - caseSelectionnee.Colonne) == 2) && (CaseChoisie.Piece == null || CaseChoisie.Piece.Couleur != caseSelectionnee.Piece.Couleur))
+                                {
+                                    //Récupère l'image de la pièce
+                                    Image imagePieceDeplacement = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
 
-                                            // Déplacement de la pièce
-                                            CaseChoisie.Piece = caseSelectionnee.Piece;
-                                            caseSelectionnee.Piece = null;
+                                    //Enleve l'image de la pièce
+                                    mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child = null;
+                                    //Mets l'image de la pièce sur la nouvelle case
+                                    mesGrilles[CaseChoisie.Ligne, CaseChoisie.Colonne].Child = imagePieceDeplacement;
 
-                                            //Condition qui remet les couleurs sur l'échiquier
-                                            if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
+                                    // Déplacement de la pièce
+                                    CaseChoisie.Piece = caseSelectionnee.Piece;
+                                    caseSelectionnee.Piece = null;
+
+                                    if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
+                                    {
+                                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+
+
+                                    }
+                                    else
+                                    {
+                                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                                    }
+                                    dernierPionDeuxCases = null;
+                                    //Réinitialise la case selectionnée
+                                    caseSelectionnee = null;
+                                }
+                            }
+                            //Condition qui vérifie la piece cliqué est une dame
+                            else if (caseSelectionnee.Piece.Type == TypePiece.Dame)
+                            {
+                                if (((CaseChoisie.Ligne != caseSelectionnee.Ligne && CaseChoisie.Colonne == caseSelectionnee.Colonne
+                                    || CaseChoisie.Colonne != caseSelectionnee.Colonne && CaseChoisie.Ligne == caseSelectionnee.Ligne)
+                                    || (Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne)) == (Math.Abs(CaseChoisie.Colonne - caseSelectionnee.Colonne))
+                                    && Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne) != 0)
+                                    && (CaseChoisie.Piece == null || CaseChoisie.Piece.Couleur != caseSelectionnee.Piece.Couleur))
+                                {
+
+                                    bool cheminLibre = true;
+                                    //Déplacement horizontal et vertical
+                                    if (caseSelectionnee.Ligne == CaseChoisie.Ligne)
+                                    {
+                                        // Vers la droite
+                                        if (caseSelectionnee.Colonne < CaseChoisie.Colonne)
+                                        {
+                                            for (int i = caseSelectionnee.Colonne + 1; i < CaseChoisie.Colonne; i++)
                                             {
-                                                mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+                                                if (mesCases[caseSelectionnee.Ligne, i].Piece is not null)
+                                                {
+                                                    cheminLibre = false;
+                                                }
                                             }
-                                            else
+                                        }
+                                        // Vers la gauche
+                                        else
+                                        {
+                                            for (int i = caseSelectionnee.Colonne - 1; i > CaseChoisie.Colonne; i--)
                                             {
-                                                mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                                                if (mesCases[caseSelectionnee.Ligne, i].Piece is not null)
+                                                {
+                                                    cheminLibre = false;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else if(caseSelectionnee.Colonne == CaseChoisie.Colonne)
+                                    {
+                                        // Vers le bas
+                                        if (caseSelectionnee.Ligne < CaseChoisie.Ligne)
+                                        {
+                                            for (int i = caseSelectionnee.Ligne + 1; i < CaseChoisie.Ligne; i++)
+                                            {
+                                                if (mesCases[i, caseSelectionnee.Colonne].Piece is not null)
+                                                {
+                                                    cheminLibre = false;
+                                                }
+                                            }
+                                        }
+                                        // Vers le haut
+                                        else
+                                        {
+                                            for (int i = caseSelectionnee.Ligne - 1; i > CaseChoisie.Ligne; i--)
+                                            {
+                                                if (mesCases[i, caseSelectionnee.Colonne].Piece is not null)
+                                                {
+                                                    cheminLibre = false;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    //Diagonale
+                                    else if (caseSelectionnee.Ligne < CaseChoisie.Ligne && caseSelectionnee.Colonne < CaseChoisie.Colonne)
+                                    {
+                                        for (int i = 0; i < Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne) - 1; i++)
+                                        {
+                                            int LigneVerif = caseSelectionnee.Ligne + i + 1;
+                                            int ColonneVerif = caseSelectionnee.Colonne + i + 1;
+                                            if (mesCases[LigneVerif, ColonneVerif].Piece is not null)
+                                            {
+                                                cheminLibre = false;
                                             }
 
-                                            //Oublie si un pion à avancer de deux cases
-                                            dernierPionDeuxCases = null;
+                                        }
+                                    }
+                                    else if (caseSelectionnee.Ligne < CaseChoisie.Ligne && caseSelectionnee.Colonne > CaseChoisie.Colonne)
+                                    {
+                                        for (int i = 0; i < Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne) - 1; i++)
+                                        {
+                                            int LigneVerif = caseSelectionnee.Ligne + i + 1;
+                                            int ColonneVerif = caseSelectionnee.Colonne - i - 1;
+                                            if (mesCases[LigneVerif, ColonneVerif].Piece is not null)
+                                            {
+                                                cheminLibre = false;
+                                            }
 
-                                            //Oublie la derniere piece bouger
-                                            caseSelectionnee = null;
-                                        }  
+                                        }
+                                    }
+                                    else if (caseSelectionnee.Ligne > CaseChoisie.Ligne && caseSelectionnee.Colonne < CaseChoisie.Colonne)
+                                    {
+                                        for (int i = 0; i < Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne) - 1; i++)
+                                        {
+                                            int LigneVerif = caseSelectionnee.Ligne - i - 1;
+                                            int ColonneVerif = caseSelectionnee.Colonne + i + 1;
+                                            if (mesCases[LigneVerif, ColonneVerif].Piece is not null)
+                                            {
+                                                cheminLibre = false;
+                                            }
+
+                                        }
+                                    }
+                                    else if (caseSelectionnee.Ligne > CaseChoisie.Ligne && caseSelectionnee.Colonne > CaseChoisie.Colonne)
+                                    {
+
+                                        for (int i = 0; i < Math.Abs(CaseChoisie.Ligne - caseSelectionnee.Ligne) - 1; i++)
+                                        {
+                                            int LigneVerif = caseSelectionnee.Ligne - i - 1;
+                                            int ColonneVerif = caseSelectionnee.Colonne - i - 1;
+                                            if (mesCases[LigneVerif, ColonneVerif].Piece is not null)
+                                            {
+                                                cheminLibre = false;
+                                            }
+
+                                        }
+                                    }
+                                    // Déplacement si le chemin est libre
+                                    if (cheminLibre == true)
+                                    {
+                                        //Récupère l'image de la pièce
+                                        Image imagePieceDeplacement = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
+
+                                        //Enleve l'image de la pièce
+                                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child = null;
+
+                                        //Mets l'image de la pièce sur la nouvelle case
+                                        mesGrilles[CaseChoisie.Ligne, CaseChoisie.Colonne].Child = imagePieceDeplacement;
+
+                                        // Déplacement de la pièce
+                                        CaseChoisie.Piece = caseSelectionnee.Piece;
+                                        caseSelectionnee.Piece = null;
+
+                                        //Condition qui remet les couleurs sur l'échiquier
+                                        if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+                                        }
+                                        else
+                                        {
+                                            mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                                        }
+
+                                        //Oublie si un pion à avancer de deux cases
+                                        dernierPionDeuxCases = null;
+
+                                        //Oublie la derniere piece bouger
+                                        caseSelectionnee = null;
+                                    }
+                                }
+                            }
+                            //Condition qui vérifie la piece cliqué est un roi
+                            else if (caseSelectionnee.Piece.Type == TypePiece.Roi)
+                            {
+                                if ((Math.Abs(caseSelectionnee.Ligne - CaseChoisie.Ligne) <=1 
+                                    && Math.Abs(caseSelectionnee.Colonne - CaseChoisie.Colonne) <=1 
+                                    && (Math.Abs(caseSelectionnee.Ligne - CaseChoisie.Ligne) !=0
+                                    || Math.Abs(caseSelectionnee.Colonne - CaseChoisie.Colonne)!=0)
+                                    && (CaseChoisie.Piece == null || CaseChoisie.Piece.Couleur != caseSelectionnee.Piece.Couleur)
+                                    && !CaseEstAttaquee(CaseChoisie, mesCases[caseSelectionnee.Ligne,caseSelectionnee.Colonne].Piece.Couleur)))
+
+                                {
+                                    //Récupère l'image de la pièce
+                                    Image imagePieceDeplacement = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
+
+                                    //Enleve l'image de la pièce
+                                    mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child = null;
+
+                                    //Mets l'image de la pièce sur la nouvelle case
+                                    mesGrilles[CaseChoisie.Ligne, CaseChoisie.Colonne].Child = imagePieceDeplacement;
+
+
+
+                                    // Déplacement de la pièce
+                                    CaseChoisie.Piece = caseSelectionnee.Piece;
+                                    caseSelectionnee.Piece = null;
+
+
+                                    if (mesCases[CaseChoisie.Ligne, CaseChoisie.Colonne].Piece.Couleur == CouleurPiece.Blanc)
+                                    {
+                                        if (CaseEstAttaquee(mesCases[CaseChoisie.Ligne, CaseChoisie.Colonne] ,mesCases[CaseChoisie.Ligne, CaseChoisie.Colonne].Piece.Couleur) == true)
+                                            Console.WriteLine("Le roi blanc est en échec");
+                                    }
+                                    else
+                                    {
+                                        if (CaseEstAttaquee(mesCases[CaseChoisie.Ligne, CaseChoisie.Colonne], mesCases[CaseChoisie.Ligne, CaseChoisie.Colonne].Piece.Couleur) == true)
+                                            Console.WriteLine("Le roi noir est en échec");
+                                    }
+
+                                    //Condition qui remet les couleurs sur l'échiquier
+                                    if ((caseSelectionnee.Ligne + caseSelectionnee.Colonne) % 2 == 0)
+                                    {
+                                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Black;
+                                    }
+                                    else
+                                    {
+                                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.White;
+                                    }
+
+                                    //Oublie si un pion à avancer de deux cases
+                                    dernierPionDeuxCases = null;
+
+                                    //Oublie la derniere piece bouger
+                                    caseSelectionnee = null;
+                                }
+                            }
+
+                            for (int i = 0; i <= 7; i++)
+                            {
+                                for(int c = 0; c <= 7; c++)
+                                {
+                                    if(mesCases[i,c].Piece is not null)
+                                    {
+                                        if (mesCases[i,c].Piece.Type == TypePiece.Roi)
+                                        {
+                                           
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -914,6 +1443,7 @@ namespace Echec
                 }
             }
         }
+        
 
 
 
