@@ -29,5 +29,7 @@ namespace Echec
         public TypePiece Type;
         public CouleurPiece Couleur;
 
+        public bool ADejaBouge;
+
     }
 }
