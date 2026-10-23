@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Echec
 {
-    enum TypePiece
+    public enum TypePiece
     {
         Pion,
         Tour,
@@ -15,7 +15,7 @@ namespace Echec
     }
 
 
-    enum CouleurPiece
+    public enum CouleurPiece
     {
         Blanc,
         Noir

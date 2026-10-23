@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.CodeDom;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.Eventing.Reader;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -29,6 +30,9 @@ namespace Echec
         Case caseSelectionnee;
         Case dernierPionDeuxCases = null;
 
+        Case caseAttaqueCouleur = null;
+
+        CouleurPiece PremierJoueur = CouleurPiece.Blanc;
         //Méthode qui vérifie si une case est attaquée
         bool CaseEstAttaquee(Case caseAVerifier, CouleurPiece couleurRoi)
         {
@@ -679,9 +683,12 @@ namespace Echec
             {
                 if (CaseChoisie.Piece is not null)
                 {
-                    caseSelectionnee = CaseChoisie;
+                    if (CaseChoisie.Piece.Couleur == PremierJoueur)
+                    {
+                        caseSelectionnee = CaseChoisie;
 
-                    mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Green;
+                        mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Background = Brushes.Green;
+                    }
                 }
                 return;
             }
@@ -696,14 +703,19 @@ namespace Echec
 
                     #region Variables
                     CouleurPiece couleurPiece = caseSelectionnee.Piece.Couleur;
-                    Piece pieceASauvegarder = CaseChoisie.Piece;
                     Case dernierPionDeuxCaseSauvegarde = dernierPionDeuxCases;
+                    Case caseTourDepartRoque = null;
+                    Case caseTourArriveeRoque = null;
                     Image imagePieceASauvegarder = (Image)mesGrilles[CaseChoisie.Ligne, CaseChoisie.Colonne].Child;
                     Image imagePriseEnPassantSauvegarde = null;
                     Image imagePieceDeplacementSauvegarde = null;
+                    Image imageTourRoqueSauvegarde = null;
+                    Piece pieceASauvegarder = CaseChoisie.Piece;
                     Piece pionCapturer = null;
+                    Piece tourRoqueSauvegarde = null;
                     bool deplacementEffectue = false;
                     bool priseEnPassantEffectuee = false;
+                    bool tourRoqueADejaBougeSauvegarde = false;
                     bool aDejaBougeSauvegarde = caseSelectionnee.Piece.ADejaBouge;
                     #endregion
 
@@ -732,13 +744,14 @@ namespace Echec
 
                         if (caseSelectionnee.Piece is not null)
                         {
+                            //Condition qui vérifie la pièce cliqué est un pion
                             if (caseSelectionnee.Piece.Type == TypePiece.Pion)
                             {
                                 //Vérifie si c'est un pion blanc
                                 if (caseSelectionnee.Piece.Couleur == CouleurPiece.Blanc)
                                 {
                                     //Vérifie si le pion blanc a le droit de se déplacer
-                                    if (CaseChoisie.Ligne == caseSelectionnee.Ligne + 1 && CaseChoisie.Colonne == caseSelectionnee.Colonne && (CaseChoisie.Piece == null || CaseChoisie.Piece.Couleur != caseSelectionnee.Piece.Couleur))
+                                    if (CaseChoisie.Ligne == caseSelectionnee.Ligne + 1 && CaseChoisie.Colonne == caseSelectionnee.Colonne && CaseChoisie.Piece == null)
                                     {
                                         //Récupère l'image de la pièce
                                         Image imagePieceDeplacement = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
@@ -1428,6 +1441,7 @@ namespace Echec
                                     && !caseSelectionnee.Piece.ADejaBouge
                                     && mesCases[caseSelectionnee.Ligne, 7].Piece != null
                                     && mesCases[caseSelectionnee.Ligne, 7].Piece.Type == TypePiece.Tour
+                                    && mesCases[caseSelectionnee.Ligne, 7].Piece.Couleur == caseSelectionnee.Piece.Couleur
                                     && !mesCases[caseSelectionnee.Ligne, 7].Piece.ADejaBouge
                                     && mesCases[caseSelectionnee.Ligne, 5].Piece == null
                                     && mesCases[caseSelectionnee.Ligne, 6].Piece == null
@@ -1438,8 +1452,15 @@ namespace Echec
 
                                     //Variable
                                     Piece tourASauvegarder = mesCases[caseSelectionnee.Ligne, 7].Piece;
+                                    caseTourDepartRoque = mesCases[caseSelectionnee.Ligne, 7];
+                                    caseTourArriveeRoque = mesCases[caseSelectionnee.Ligne, 5];
+                                    tourRoqueSauvegarde = tourASauvegarder;
+                                    tourRoqueADejaBougeSauvegarde = tourASauvegarder.ADejaBouge;
+                                    imageTourRoqueSauvegarde = (Image)mesGrilles[caseSelectionnee.Ligne, 7].Child;
+
                                     //Récupère l'image du roi
                                     Image imageRoiRoque = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
+                                    imagePieceDeplacementSauvegarde = imageRoiRoque;
 
                                     //Enleve l'image du roi
                                     mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child = null;
@@ -1489,6 +1510,7 @@ namespace Echec
                                     && !caseSelectionnee.Piece.ADejaBouge
                                     && mesCases[caseSelectionnee.Ligne, 0].Piece != null
                                     && mesCases[caseSelectionnee.Ligne, 0].Piece.Type == TypePiece.Tour
+                                    && mesCases[caseSelectionnee.Ligne, 7].Piece.Couleur == caseSelectionnee.Piece.Couleur
                                     && !mesCases[caseSelectionnee.Ligne, 0].Piece.ADejaBouge
                                     && mesCases[caseSelectionnee.Ligne, 1].Piece == null
                                     && mesCases[caseSelectionnee.Ligne, 2].Piece == null
@@ -1500,8 +1522,14 @@ namespace Echec
 
                                     //Variable
                                     Piece tourASauvegarder = mesCases[caseSelectionnee.Ligne, 0].Piece;
+                                    caseTourDepartRoque = mesCases[caseSelectionnee.Ligne, 0];
+                                    caseTourArriveeRoque = mesCases[caseSelectionnee.Ligne, 3];
+                                    tourRoqueSauvegarde = tourASauvegarder;
+                                    tourRoqueADejaBougeSauvegarde = tourASauvegarder.ADejaBouge;
+                                    imageTourRoqueSauvegarde = (Image)mesGrilles[caseSelectionnee.Ligne, 0].Child;
                                     //Récupère l'image du roi
                                     Image imageRoiRoque = (Image)mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child;
+                                    imagePieceDeplacementSauvegarde = imageRoiRoque;
 
                                     //Enleve l'image du roi
                                     mesGrilles[caseSelectionnee.Ligne, caseSelectionnee.Colonne].Child = null;
@@ -1592,7 +1620,6 @@ namespace Echec
                                 //caseSelectionnee = null;
                             }
 
-
                             // Vérifie si le déplacement laisse le roi en échec
                             if (deplacementEffectue == true)
                             {
@@ -1640,6 +1667,18 @@ namespace Echec
                                                         // Restaure l'état précédent de la pièce
                                                         caseSelectionnee.Piece.ADejaBouge = aDejaBougeSauvegarde;
 
+                                                        // Restaure également la tour si le déplacement était un roque
+                                                        if (caseTourDepartRoque != null && caseTourArriveeRoque != null)
+                                                        {
+                                                            caseTourDepartRoque.Piece = tourRoqueSauvegarde;
+                                                            caseTourArriveeRoque.Piece = null;
+
+                                                            mesGrilles[caseTourDepartRoque.Ligne, caseTourDepartRoque.Colonne].Child = imageTourRoqueSauvegarde;
+                                                            mesGrilles[caseTourArriveeRoque.Ligne, caseTourArriveeRoque.Colonne].Child = null;
+
+                                                            tourRoqueSauvegarde.ADejaBouge = tourRoqueADejaBougeSauvegarde;
+                                                        }
+
                                                         // Le déplacement n'est finalement pas effectué
                                                         deplacementEffectue = false;
                                                     }
@@ -1649,10 +1688,104 @@ namespace Echec
                                     }
                                 }
                             }
-
-                            // Désélectionne uniquement si le déplacement a réellement été effectué
+                            // Gestion echec au roi
                             if (deplacementEffectue == true)
                             {
+                                if (caseAttaqueCouleur != null)
+                                {
+                                    if ((caseAttaqueCouleur.Ligne + caseAttaqueCouleur.Colonne) % 2 == 0)
+                                    {
+                                        mesGrilles[caseAttaqueCouleur.Ligne, caseAttaqueCouleur.Colonne].Background = Brushes.Black;
+                                    }
+                                    else
+                                    {
+                                        mesGrilles[caseAttaqueCouleur.Ligne, caseAttaqueCouleur.Colonne].Background = Brushes.White;
+                                    }
+                                    caseAttaqueCouleur = null;
+                                }
+                                for (int i = 0; i <= 7; i++)
+                                {
+                                    for (int c = 0; c <= 7; c++)
+                                    {
+                                        if (mesCases[i, c].Piece is not null)
+                                        {
+                                            if (mesCases[i, c].Piece.Type == TypePiece.Roi)
+                                            {
+                                                if (mesCases[i, c].Piece.Couleur != couleurPiece)
+                                                {
+                                                    if (CaseEstAttaquee(mesCases[i, c], mesCases[i, c].Piece.Couleur) == true)
+                                                    {
+                                                        mesGrilles[i, c].Background = Brushes.Red;
+                                                        caseAttaqueCouleur = mesCases[i, c];
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            // Gestion de la promotion des pions
+                            if (deplacementEffectue == true
+                                && CaseChoisie.Piece != null
+                                && CaseChoisie.Piece.Type == TypePiece.Pion
+                                && ((CaseChoisie.Ligne == 0 && CaseChoisie.Piece.Couleur == CouleurPiece.Noir) || (CaseChoisie.Ligne == 7 && CaseChoisie.Piece.Couleur == CouleurPiece.Blanc)))
+                            {
+                                string couleurPromotion;
+                                //Ouvre une instance pour la promotion
+                                PromotionWindow promotionWindow = new PromotionWindow();
+                                promotionWindow.DefinirCouleurPieces(couleurPiece);
+                                promotionWindow.ShowDialog();
+
+                                CouleurPiece CouleurPieceProm = CaseChoisie.Piece.Couleur;
+                                TypePiece PromotionType = promotionWindow.PieceChoisiePromotion;
+
+                                Piece Promotion = new Piece();
+
+                                //Attribution des caratéristiques de la pièce choisie
+                                Promotion.Type = PromotionType;
+                                Promotion.Couleur = CouleurPieceProm;
+                                Promotion.ADejaBouge = true;
+
+
+                                CaseChoisie.Piece = Promotion;
+
+                                //Condition pour recrer le nom de la pièce
+                                if (Promotion.Couleur == CouleurPiece.Blanc)
+                                {
+                                    couleurPromotion = "B";
+                                }
+                                else
+                                {
+                                    couleurPromotion = "N";
+                                }
+                                //Variable qui recréer le nom de la pièce que l'on veut récupérer
+                                string cheminImage = string.Concat(PromotionType.ToString(),couleurPromotion,".png");
+
+
+                                //récupère l'image de la pièce
+                                BitmapImage PromoPiece = new BitmapImage();
+                                PromoPiece.BeginInit();
+                                PromoPiece.UriSource = new Uri(@"Image_Piece/"+cheminImage, UriKind.Relative);
+                                PromoPiece.EndInit();
+
+                                Image imagePromotion = new Image();
+                                imagePromotion.Source = PromoPiece;
+
+
+                                mesGrilles[CaseChoisie.Ligne, CaseChoisie.Colonne].Child = imagePromotion;
+
+                            }
+                            // Désélectionne uniquement si le déplacement a réellement été effectué + Gestion du switch des joueurs
+                            if (deplacementEffectue == true)
+                            {
+                                if(PremierJoueur == CouleurPiece.Blanc)
+                                {
+                                    PremierJoueur = CouleurPiece.Noir;
+                                }
+                                else
+                                {
+                                    PremierJoueur = CouleurPiece.Blanc;
+                                }
                                 caseSelectionnee = null;
                             }
                         }
